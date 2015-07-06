@@ -1,0 +1,74 @@
+<html>
+<head>
+<title> WebChat - Mockup </title>
+<style>
+body * { color: #555; font-size: 15px;}
+.body {
+	width: 800px;
+	margin: 0 auto;
+
+}
+.body h1 { 
+	color: #38e; 
+	font-size: 24px; 
+	text-align: center;
+}
+.chat-box:after{
+	content:"";
+	display: block;
+	clear:both;
+
+}
+#chat {
+	width: 520px;
+	height: 300px;
+	float: left;
+	padding: 10px;
+	border: 1px solid #eee;
+	overflow: auto;
+}
+#member {
+	width: 230px;
+	height: 300px;
+	float: right;
+	padding: 10px;
+	border: 1px solid #eee;
+	background-color: #333;
+	color: #eee;
+}
+
+#nick {
+	margin: 10px 0;
+}
+#msg {
+	width: 100%;
+	font-size: 18px;
+}
+
+</style>
+<script>
+function send_msg(){
+	var msg_send = document.getElementById("msg");
+	var chat_list = document.getElementById("chat");
+	var chat_msg = document.createElement("p");
+	chat_msg.textContent = msg_send.value;
+	chat_list.insertBefore(chat_msg, chat_list.firstChild);
+	msg_send.value='';
+	return false;
+}
+</script>
+<body>
+
+<div class="body">
+	<h1>웹채팅</h1>
+	<div class="chat-box">
+		<div id="chat"></div>
+		<div id="member">채팅 멤버 리스트</div>
+	</div>
+	<div id="nick">닉네임</div>
+	<div class="msg-box">
+		<form onsubmit="return send_msg()">
+			<input type="text" id="msg" />
+		</form>
+	</div>
+</div>

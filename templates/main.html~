@@ -1,0 +1,140 @@
+<html>
+<head>
+<title> WebChat - Mockup </title>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+<style>
+body * { color: #555; font-size: 15px;}
+.body {
+	width: 800px;
+	margin: 0 auto;
+
+}
+.body h1 { 
+	color: #38e; 
+	font-size: 24px; 
+	text-align: center;
+}
+.chat-box:after{
+	content:"";
+	display: block;
+	clear:both;
+
+}
+#chat {
+	width: 520px;
+	height: 300px;
+	float: left;
+	padding: 10px;
+	border: 1px solid #eee;
+	overflow: auto;
+}
+#member {
+	width: 230px;
+	height: 300px;
+	float: right;
+	padding: 10px;
+	border: 1px solid #eee;
+	background-color: #333;
+	color: #eee;
+}
+
+#nick {
+	margin: 10px 0;
+}
+#msg {
+	width: 100%;
+	font-size: 18px;
+}
+
+</style>
+<script>
+/*
+function send_msg(){
+	var msg_send = document.getElementById("msg");
+	if(msg_send.value){
+		var chat_list = document.getElementById("chat");
+		var chat_msg = document.createElement("p");
+		chat_msg.textContent = msg_send.value;
+		chat_list.appendChild(chat_msg);
+		chat_list.scrollTop = chat_list.scrollHeight;
+		msg_send.value='';
+	}
+	return false;
+}
+*/
+$(document).ready(function() {
+	connect_socket();	
+	//event_socket();
+	$("#send").submit(function(event) {
+		send_msg();
+		return false;
+			
+	});	
+//	socket.on('send msg', function(msg) {
+//		$("#chat").append(  "<p>" +  msg + "</p>");
+//		var chat_div = $("#chat");
+//		chat_div.scrollTop(chat_div.prop('scrollHeight'));
+//	});
+
+
+	socket.on('message', function(msg) {
+		$("#chat").append(  "<p>" +  msg + "</p>");
+		var chat_div = $("#chat");
+		chat_div.scrollTop(chat_div.prop('scrollHeight'));
+	});
+
+
+});
+
+function event_socket(){
+	var ws_url = "http://" + document.domain + ":" + location.port + "/event";
+	socket = io.connect(ws_url);
+	socket.on('connect', function() {
+    		socket.emit('connect', {data: 'connected!'});
+    	});	
+}
+
+function connect_socket(){
+	var ws_url = "http://" + document.domain + ":" + location.port;
+	socket = io.connect(ws_url);
+	socket.on('connect', function() {
+		var nick = $("#nick").text();
+    		socket.emit('connect', 'connected!'});
+    	});	
+}
+
+function send_msg(){
+	var msg_send = $("#msg").val();
+	var nick = $("#nick").text();
+	var msg = nick + ": " +  msg_send;
+	if (msg_send) {
+		socket.send(msg);	
+		//socket.emit('send msg', msg);
+		$("#msg").val('');
+	}
+}
+
+
+</script>
+<body>
+
+<div class="body">
+	<h1>웹채팅</h1>
+	<div class="chat-box">
+		<div id="chat"></div>
+		<div id="member">채팅 멤버 리스트</div>
+	</div>
+	<div id="nick">
+	{% if nick_name %}
+	{{ nick_name }}
+	{% else %}	
+	NickName
+	{% endif %}
+	</div>
+	<div class="msg-box">
+		<form id="send">
+			<input type="text" id="msg" />
+		</form>
+	</div>
+</div>
