@@ -36,7 +36,8 @@ body * { color: #555; font-size: 15px;}
 	padding: 10px;
 	border: 1px solid #eee;
 	background-color: #333;
-	color: #eee;
+	color: #FFF;
+	overflow: auto;
 }
 
 #nick {
@@ -49,6 +50,8 @@ body * { color: #555; font-size: 15px;}
 
 </style>
 <script>
+var nick;
+var tmp_member;
 /*
 function send_msg(){
 	var msg_send = document.getElementById("msg");
@@ -66,6 +69,8 @@ function send_msg(){
 $(document).ready(function() {
 	connect_socket();	
 	//event_socket();
+	nick =  $("#nick").text()
+
 	$("#send").submit(function(event) {
 		send_msg();
 		return false;
@@ -76,8 +81,16 @@ $(document).ready(function() {
 //		var chat_div = $("#chat");
 //		chat_div.scrollTop(chat_div.prop('scrollHeight'));
 //	});
-
-
+	socket.on('connect', function(conn_member) {
+		console.debug(conn_member["nick"]);
+		if(conn_member["nick"] != tmp_member){
+			$("#member").append(  "<p>" +  conn_member["nick"] + "</p>");
+			var member_div = $("#member");
+			member_div.scrollTop(member_div.prop('scrollHeight'));
+			tmp_member = conn_member["nick"];
+		}
+	});
+	
 	socket.on('message', function(msg) {
 		$("#chat").append(  "<p>" +  msg + "</p>");
 		var chat_div = $("#chat");
@@ -98,21 +111,25 @@ function event_socket(){
 function connect_socket(){
 	var ws_url = "http://" + document.domain + ":" + location.port;
 	socket = io.connect(ws_url);
+
 	socket.on('connect', function() {
-		var nick = $("#nick").text();
-    		socket.emit('connect', 'connected!'});
+    		socket.emit('connect', nick);
     	});	
 }
 
 function send_msg(){
 	var msg_send = $("#msg").val();
-	var nick = $("#nick").text();
+
 	var msg = nick + ": " +  msg_send;
 	if (msg_send) {
 		socket.send(msg);	
 		//socket.emit('send msg', msg);
 		$("#msg").val('');
 	}
+}
+function get_member_list(){
+	$("#member").val()
+
 }
 
 
