@@ -51,7 +51,6 @@ body * { color: #555; font-size: 15px;}
 </style>
 <script>
 var nick;
-var tmp_member;
 /*
 function send_msg(){
 	var msg_send = document.getElementById("msg");
@@ -67,9 +66,9 @@ function send_msg(){
 }
 */
 $(document).ready(function() {
+	nick =  $("#nick").text()
 	connect_socket();	
 	//event_socket();
-	nick =  $("#nick").text()
 
 	$("#send").submit(function(event) {
 		send_msg();
@@ -82,13 +81,13 @@ $(document).ready(function() {
 //		chat_div.scrollTop(chat_div.prop('scrollHeight'));
 //	});
 	socket.on('connect', function(conn_member) {
-		console.debug(conn_member["nick"]);
-		if(conn_member["nick"] != tmp_member){
-			$("#member").append(  "<p>" +  conn_member["nick"] + "</p>");
+		if (typeof conn_member != 'undefined'){
+			$("#member").html("채팅 참가 멤버");	
+			$("#member").append(  "<p>" +  conn_member + "</p>");
 			var member_div = $("#member");
 			member_div.scrollTop(member_div.prop('scrollHeight'));
-			tmp_member = conn_member["nick"];
 		}
+
 	});
 	
 	socket.on('message', function(msg) {
@@ -111,7 +110,7 @@ function event_socket(){
 function connect_socket(){
 	var ws_url = "http://" + document.domain + ":" + location.port;
 	socket = io.connect(ws_url);
-
+	console.debug(nick);
 	socket.on('connect', function() {
     		socket.emit('connect', nick);
     	});	
@@ -140,7 +139,7 @@ function get_member_list(){
 	<h1>웹채팅</h1>
 	<div class="chat-box">
 		<div id="chat"></div>
-		<div id="member">채팅 멤버 리스트</div>
+		<div id="member"></div>
 	</div>
 	<div id="nick">
 	{% if nick_name %}

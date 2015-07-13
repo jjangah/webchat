@@ -1,23 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import time, redis, threading, re
+import time, threading
 from flask import Flask, render_template
 from flask.ext.socketio import SocketIO
+from lib import webchat_lib 
 
 app = Flask(__name__)
 socketio = SocketIO(app)
-
-def conn_redis_pubsub():
-	r = redis.client.StrictRedis()
-	return r
-
-def pub_msg(msg, channel_name):
-	global redis_conn
-	redis_conn.publish(channel_name, msg)
-	print msg
-	return
-
-redis_conn = conn_redis_pubsub()
+redis_conn = webchat_lib.conn_redis_pubsub()
 sub_chat = redis_conn.pubsub()
 sub_member = redis_conn.pubsub()
 
@@ -25,21 +15,21 @@ sub_chat.subscribe('chat')
 sub_member.subscribe('member')
 
 def listen_chat():
-	global i
 	for m in sub_chat.listen():
 		if m['data'] :
-			msg = m['data']
-			if msg :
-				socketio.send(str(msg))
+			socketio.send(str(m['data']))
 
-t = threading.Thread(target=listen_chat)
-t.deamon = True
-t.start()
+try :
+	t = threading.Thread(target=listen_chat)
+	t.deamon = True
+	t.start()
+except (KeyboardInterrupt, SystemExit):
+	
+	raise
 
-def trim_msg(msg):
-	new_msg = re.sub(r'\n+\t', '', msg)
-	return new_msg
-
+except:
+	print "KeyboardInterrupted!! exit!" 
+	socketio.server.stop()
 
 @app.route('/')
 def index():
@@ -48,19 +38,26 @@ def index():
 
 @socketio.on('message')
 def handle_message(msg):
-	new_msg = trim_msg(msg)	
-	pub_msg(new_msg, 'chat')
+	global redis_conn
+	new_msg = webchat_lib.trim_msg(msg)	
+	redis_conn.publish('chat', new_msg)
+	print new_msg	
 	return
 
 @socketio.on('connect')
 def handle_connect(nick):
-	new_nick = trim_msg(nick)	
-	socketio.emit('connect', {"nick":new_nick})
+	new_nick = webchat_lib.trim_msg(nick)	
+	socketio.emit('connect', new_nick)
 	return
 
+@socketio.on('disconnect')
+def handle_disconnect():
+	print "disconnected"
+	return
 
 if __name__ == '__main__':
 	app.debug = True
 	socketio.run(app)
+
 #	app.run('0.0.0.0')
 
